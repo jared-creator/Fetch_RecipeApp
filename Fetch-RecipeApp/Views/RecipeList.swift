@@ -13,15 +13,19 @@ struct RecipeList: View {
     var fetcher = RecipesFetcher()
     
     var body: some View {
-        VStack {
-            foodList
-        }
-        .onAppear {
-            Task {
-                do {
-                    food = try await fetcher.fetchRecipes()
-                } catch {
-                    
+        NavigationStack {
+            VStack {
+                foodList
+            }
+            .navigationTitle("Recipes")
+            .navigationBarTitleDisplayMode(.inline) //Large title creates a visual glitch when using 'pull down to refresh'
+            .onAppear {
+                Task {
+                    do {
+                        food = try await fetcher.fetchRecipes()
+                    } catch {
+                        
+                    }
                 }
             }
         }
@@ -29,18 +33,29 @@ struct RecipeList: View {
     
     private var foodList: some View {
         List {
-            if let food = food {
-                ForEach(food.recipes, id: \.uuid) { recipe in
-                    Text(recipe.name)
-                }
+            ForEach(recipeSearch, id: \.uuid) { recipe in
+                Text(recipe.name)
             }
         }
+        .searchable(text: $vm.foodListSearch, placement: .navigationBarDrawer(displayMode: .always), prompt: Text("Search for a recipe by name"))
         .refreshable {
             do {
                 food = try await fetcher.fetchRecipes()
             } catch {
                 
             }
+        }
+    }
+    
+    private var recipeSearch: [MealDescription] {
+        if let food = food {
+            if vm.foodListSearch.isEmpty {
+                return food.recipes
+            } else {
+                return food.recipes.filter { $0.name.contains(vm.foodListSearch)}
+            }
+        } else {
+            return []
         }
     }
 }
