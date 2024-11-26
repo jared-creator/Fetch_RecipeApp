@@ -29,7 +29,7 @@ actor RecipesFetcher {
             let decoder = JSONDecoder()
             recipes = try decoder.decode(Recipe.self, from: data)
             for i in 0..<recipes!.recipes.count {
-                try await cacheImage(image: recipes!.recipes[i].photoUrlSmall, meal: recipes!.recipes[i].uuid)
+                try await cacheImage(image: recipes!.recipes[i].photoUrlLarge, meal: recipes!.recipes[i].uuid)                
             }
             return recipes!
         } catch {

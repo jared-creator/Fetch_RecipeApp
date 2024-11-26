@@ -18,7 +18,8 @@ struct RecipeImage: View {
                 Image(uiImage: recipeImage)
                     .resizable()
                     .scaledToFit()
-                    .frame(width: 100, height: 100)
+                    .frame(width: 150, height: 150)
+                    .clipShape(.rect(cornerRadius: 10))
             } else {
                 ProgressView("Loading...")
             }
