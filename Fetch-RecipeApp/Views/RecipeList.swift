@@ -10,12 +10,18 @@ import SwiftUI
 struct RecipeList: View {
     @State private var food: Recipe? = nil
     @State private var vm = RecipeListViewModel()
+    @State private var recipeImage: UIImage? = nil
+    
     var fetcher = RecipesFetcher()
     
     var body: some View {
         NavigationStack {
             VStack {
-                foodList
+                if vm.reloadingData == false {
+                    foodList
+                } else {
+                    ProgressView("Fetching Recipes")
+                }
             }
             .navigationTitle("Recipes")
             .navigationBarTitleDisplayMode(.inline) //Large title creates a visual glitch when using 'pull down to refresh'
@@ -32,17 +38,46 @@ struct RecipeList: View {
     }
     
     private var foodList: some View {
-        List {
-            ForEach(recipeSearch, id: \.uuid) { recipe in
-                Text(recipe.name)
-            }
-        }
-        .searchable(text: $vm.foodListSearch, placement: .navigationBarDrawer(displayMode: .always), prompt: Text("Search for a recipe by name"))
-        .refreshable {
-            do {
-                food = try await fetcher.fetchRecipes()
-            } catch {
-                
+        VStack {
+            if !recipeSearch.isEmpty {
+                List {
+                    ForEach(recipeSearch, id: \.uuid) { recipe in
+                        HStack {
+                            RecipeImage(imageID: recipe.uuid)
+                            Text(recipe.name)
+                        }
+                    }
+                }
+                .searchable(text: $vm.foodListSearch, placement: .navigationBarDrawer(displayMode: .always), prompt: Text("Search for a recipe by name"))
+                .refreshable {
+                    do {
+                        food = try await fetcher.fetchRecipes()
+                    } catch {
+                        
+                    }
+                }
+            } else {
+                ContentUnavailableView {
+                    Image(systemName: "fork.knife.circle.fill")
+                        .font(.system(size: 100))
+                } description: {
+                    Text("No recipes were found.")
+                        .font(.headline)
+                } actions: {
+                    Button("Refresh") {
+                        Task {
+                            do {                                
+                                food = try await fetcher.fetchRecipes()
+                                vm.reloadingData.toggle()
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
+                                    vm.reloadingData.toggle()
+                                }
+                            } catch {
+                                
+                            }
+                        }
+                    }
+                }
             }
         }
     }
@@ -58,6 +93,8 @@ struct RecipeList: View {
             return []
         }
     }
+    
+    
 }
 
 #Preview {

@@ -10,4 +10,5 @@ import Foundation
 @Observable
 class RecipeListViewModel {
     var foodListSearch = ""
+    var reloadingData = false
 }
