@@ -38,6 +38,9 @@ class Fetch_RecipeAppTests {
             return (response!, data)
         }
         
-        _ = try await RecipesFetcher.shared.fetchRecipes(session: session)                
+        let recipes = try await RecipesFetcher.shared.fetchRecipes(session: session)
+        if recipes.recipes.count != 63 {
+            Issue.record()
+        }
     }
 }
