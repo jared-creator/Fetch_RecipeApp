@@ -14,12 +14,12 @@ actor RecipesFetcher {
         
     var recipes: Recipe? = nil
     
-    func fetchRecipes() async throws -> Recipe {
+    func fetchRecipes(session: URLSession = .shared) async throws -> Recipe {
         guard let url = URL(string: "https://d3jbb8n5wk0qxi.cloudfront.net/recipes.json") else {
             throw FRError.invalidURL
         }
         
-        let (data, response) = try await URLSession.shared.data(from: url)
+        let (data, response) = try await session.data(from: url)
         
         guard let response = response as? HTTPURLResponse, response.statusCode == 200 else {
             throw FRError.invalidResponse
@@ -37,12 +37,12 @@ actor RecipesFetcher {
         }
     }
     
-    func cacheImage(image url: String, meal id: String) async throws {
+    func cacheImage(image url: String, meal id: String, session: URLSession = .shared) async throws {
         guard let imageURL = URL(string: url) else {
             throw FRError.invalidURL
         }
         
-        let (data, response) = try await URLSession.shared.data(from: imageURL)
+        let (data, response) = try await session.data(from: imageURL)
         
         guard let response = response as? HTTPURLResponse, response.statusCode == 200 else {
             throw FRError.invalidResponse
